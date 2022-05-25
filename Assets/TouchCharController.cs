@@ -19,6 +19,7 @@ public class TouchCharController : MonoBehaviour
     }
 
 
+    //needed this conversion because of isometric camera -> change of directions
     private Vector3 IsoVectorConvert(Vector3 vector)
     {
         Quaternion rotation = Quaternion.Euler(0, 45.0f, 0);

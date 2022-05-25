@@ -6,12 +6,7 @@ namespace DefaultNamespace
     {
         public float speed = 2.0f; 
         public Transform target ;
-   
-
-        void Start()
-        {
-           // target.position = new Vector3(16.2600002f, 12.25f, 4.63000011f);
-        }
+        
         void Update()
         {
             float step = speed * Time.deltaTime;
