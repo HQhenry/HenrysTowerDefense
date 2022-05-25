@@ -12,104 +12,109 @@ public class GameController : MonoBehaviour
     public Transform target ;
 
     public GameObject waspPrefab;
-    private List<GameObject> waspsInGame;
-    private List<GameObject> waspsFreeToFollow;
+    private List<GameObject> _waspsInGame;
+    private List<GameObject> _waspsFreeToFollow;
     
     public GameObject beePrefab;
-    public GameObject defendingHive;
+    public GameObject defendingHivePrefab;
+    private GameObject defendingHive;
     
     
     public GameObject[] hearts;
     public GameObject gameOverScreen;
+    public GameObject hiveButton;
+    private bool _hiveButtonPressed = false;
     
     // Start is called before the first frame update
     void Start()
     {
         lifes = 4;
-        waspsInGame = new List<GameObject>();
-        waspsFreeToFollow = new List<GameObject>();
+        _waspsInGame = new List<GameObject>();
+        _waspsFreeToFollow = new List<GameObject>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        targetTime -= Time.deltaTime;
- 
-        if (targetTime <= 0.0f) {
- 
-            timerEnded();
- 
-        }
+        if (_hiveButtonPressed) {
+            targetTime -= Time.deltaTime;
 
-
-        GameObject waspToDestroy = null;
-        foreach (var wasp in waspsInGame)
-        {
-            if (Vector3.Distance(wasp.transform.position, target.position) < 0.2f)
+            if (targetTime <= 0.0f)
             {
 
-                if (lifes -1 > 0)
-                {
-                
-                    hearts[lifes - 1].SetActive(false);
-                    lifes -= 1 ;
-                  
-                }
-                else
-                {
-                    hearts[0].SetActive(false);
-                    gameOverScreen.SetActive(true);
-                }
+                TimerEnded();
 
-                waspToDestroy = wasp;
-                
+            }
+
+
+            GameObject waspToDestroy = null;
+            foreach (var wasp in _waspsInGame)
+            {
+                if (Vector3.Distance(wasp.transform.position, target.position) < 0.5f)
+                {
+                    Debug.Log("Here");
+
+                    if (lifes - 1 > 0)
+                    {
+
+                        hearts[lifes - 1].SetActive(false);
+                        lifes -= 1;
+
+                    }
+                    else
+                    {
+                        hearts[0].SetActive(false);
+                        gameOverScreen.SetActive(true);
+                    }
+
+                    waspToDestroy = wasp;
+
+
+                }
                 
             }
-        }
 
-        if (waspToDestroy != null)
-        {
-            Destroy(waspToDestroy);
-            waspsInGame.Remove(waspToDestroy);
+            if (waspToDestroy != null)
+            {
+                Destroy(waspToDestroy);
+                _waspsInGame.Remove(waspToDestroy);
+            }
         }
-       
     }
 
-    void timerEnded()
+    void TimerEnded()
     {
         targetTime = 5.0f;
-        addWasp();
-       
-    
-        addBee();
+        AddWasp();
+        AddBee();
     }
 
-    void addBee()
+    void AddBee()
     {
-        var transform = defendingHive.transform.position;
-        GameObject newBee = GameObject.Instantiate(beePrefab, transform, Quaternion.identity) as GameObject;
+        var placementTransform = defendingHive.transform.position;
+        GameObject newBee = Instantiate(beePrefab, placementTransform, Quaternion.identity);
         newBee.name = "DefendingBee";
         BeeBehaviour beeBehaviour = newBee.AddComponent<BeeBehaviour>();
 
-        beeBehaviour.target = findNearestEnemy();
+        beeBehaviour.target = FindNearestEnemy();
         beeBehaviour.spawnedHive = defendingHive;
        
     }
 
-    void addWasp()
+    void AddWasp()
     {
-        var transform = new Vector3(-1.86f, 10.34f, Random.Range(16.0f, -6f));
-        GameObject newWasp = GameObject.Instantiate(waspPrefab, transform, Quaternion.identity) as GameObject;
+        var placementTransform = new Vector3(-1.86f, 10.34f, Random.Range(16.0f, -6f));
+        GameObject newWasp = Instantiate(waspPrefab, placementTransform, Quaternion.identity);
         newWasp.name = "EnemyWasp";
         newWasp.AddComponent<EnemyBehaviour>().target = target.transform;
-        waspsInGame.Add(newWasp);
-        waspsFreeToFollow.Add(newWasp);
+        _waspsInGame.Add(newWasp);
+        _waspsFreeToFollow.Add(newWasp);
     }
-    GameObject findNearestEnemy()
+    GameObject FindNearestEnemy()
     {
         GameObject nearestWasp = null;
         float minDistance = float.MaxValue;
-        foreach (var wasp in waspsFreeToFollow)
+        foreach (var wasp in _waspsFreeToFollow)
         {
             var distance = Vector3.Distance(wasp.transform.position, defendingHive.transform.position); 
             if (distance < minDistance)
@@ -119,12 +124,12 @@ public class GameController : MonoBehaviour
             }
         }
 
-        waspsFreeToFollow.Remove(nearestWasp);
+        _waspsFreeToFollow.Remove(nearestWasp);
         return nearestWasp;
     }
-    public void restart()
+    public void Restart()
     {
-        foreach (var wasp in waspsInGame)
+        foreach (var wasp in _waspsInGame)
         {
             Destroy(wasp);
         }
@@ -134,7 +139,17 @@ public class GameController : MonoBehaviour
           heart.SetActive(true);
         }
         lifes = 4;
-        waspsInGame = new List<GameObject>();
+        _waspsInGame = new List<GameObject>();
         gameOverScreen.SetActive(false);
+    }
+
+    public void PlaceHive()
+    {
+        hiveButton.SetActive(false);
+        var placementTransform = new Vector3(9.31000042f,10.25f,3.52999997f);
+        GameObject newHive = Instantiate(defendingHivePrefab, placementTransform, Quaternion.identity);
+        newHive.name = "Defending_Hive";
+        defendingHive = newHive;
+        _hiveButtonPressed = true;
     }
 }
